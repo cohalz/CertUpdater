@@ -1,0 +1,61 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: CertUpdater
+ 
+Resources:
+  CertUpdater:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: CertUpdater
+      CodeUri: src/build
+      Handler: main.handler
+      Runtime: python3.6
+      AutoPublishAlias: live
+      Timeout: 240
+      MemorySize: 128
+      Tags:
+        Service: 'system'
+      Role: !GetAtt RoleForCertUpdater.Arn
+
+  RoleForCertUpdater:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: "role-for-CertUpdater"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: PolicyForCertUpdater
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+                - Effect: Allow
+                  Action:
+                    - "logs:CreateLogGroup"
+                    - "logs:CreateLogStream"
+                    - "logs:PutLogEvents"
+                  Resource: "*"
+                - Effect: "Allow"
+                  Action:
+                    - "route53:ListHostedZones"
+                    - "route53:ChangeResourceRecordSets"
+                    - "route53:GetChange"
+                  Resource:
+                    - "*"
+                - Effect: "Allow"
+                  Action:
+                    - "s3:PutObject"
+                    - "s3:PutObjectAcl"
+                    - "s3:DeleteObject"
+                  Resource:
+                    - "arn:aws:s3:::cert*"
+
+  LogGroupForCertUpdater:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${CertUpdater}
+      RetentionInDays: 14

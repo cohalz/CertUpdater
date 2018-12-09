@@ -1,0 +1,13 @@
+{
+    "domains": [
+        "*.example.com",
+        "example.com"
+    ],
+    "bucket": "certs-example-bucket",
+    "email": "cert@example.com",
+    "slack": {
+        "webhook": "https://hooks.slack.com/services/XXXXXXXXX/XXXXXXXXX/xxxxxxxxxxxxxxxxxxxxxxxx",
+        "channel": "#random"
+    },
+    "isProd": false
+  }
