@@ -5,7 +5,7 @@ SERVICE := src
 
 AWS_PROFILE=default
 SERVICE_NAME=certupdater
-BUCKET_NAME=$(SERVICE_NAME)-artifacts
+BUCKET_NAME=example-$(SERVICE_NAME)-artifacts
 CFN_CMD=aws --profile $(AWS_PROFILE) cloudformation
 TMP_TEMPLATE=tmp_template.yml
 STACK_NAME=$(SERVICE_NAME)-stack
