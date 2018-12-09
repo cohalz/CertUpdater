@@ -1,19 +1,25 @@
-# cert-updater
+# CertUpdater
 
-Route 53 で取得したドメインに対しLet's Encryptの証明書を発行し，S3にアップロードする
+ Lambda implementation for automatically getting and uploading to S3 for Let's Encrypt certificates.
 
-## ビルド
+## To Use
+
+### Build
 
 `make build`
 
-## デプロイ
+### Deploy
 
-`make deploy`
+`make deploy AWS_PROFILE=default BUCKET_NAME=example-certupdater-artifacts`
 
-## スタック削除
+### Delete Stack
 
 `make delete`
 
-## ローカルでLambda実行
+### Local invoke
 
 `make invoke`
+
+## Author
+
+[cohalz](https://github.com/cohalz)
