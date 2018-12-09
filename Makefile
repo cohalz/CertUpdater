@@ -69,7 +69,6 @@ endif
 _install_deps:
 	$(info [+] Installing '$(SERVICE)' dependencies...")
 	@pip install pipenv
-	@$(PIPENV) run pip install pip==18.0	
 	@$(PIPENV) lock -r > requirements.txt
 	@$(PIPENV) run pip install \
 		--isolated \
