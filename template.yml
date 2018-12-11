@@ -52,7 +52,7 @@ Resources:
                     - "s3:PutObjectAcl"
                     - "s3:DeleteObject"
                   Resource:
-                    - "arn:aws:s3:::cert*"
+                    - "*"
 
   LogGroupForCertUpdater:
     Type: AWS::Logs::LogGroup
