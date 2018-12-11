@@ -58,4 +58,4 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub /aws/lambda/${CertUpdater}
-      RetentionInDays: 14
+      RetentionInDays: 120
