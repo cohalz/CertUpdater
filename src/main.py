@@ -14,10 +14,9 @@ schema = {
   'type': 'object',
   'required': [
     'domains',
+    'is_production'
     'bucket',
     'email',
-    'slack',
-    'isProd'
   ],
   'properties': {
     'domains': {
@@ -25,6 +24,9 @@ schema = {
       'items': {
         'type': 'string'
       }
+    },
+    'is_production': {
+      'type': 'boolean'
     },
     'bucket': {
       'type': 'string'
@@ -46,19 +48,17 @@ schema = {
           'type': 'string'
         }
       }
-    },
-    'isProd': {
-      'type': 'boolean'
     }
   }
 }
 
 
-def load_cert(domain):
-    domain_name = domain.replace('*.', '', 1)
+def load_cert(domains):
+    first_domain_name = domains[0].replace('*.', '', 1)
 
-    path = '/tmp/config-dir/live/' + domain_name
+    path = '/tmp/config-dir/live/' + first_domain_name
     return {
+      'domains': domains,
       'certificate': read_file(path + '/cert.pem'),
       'private_key': read_file(path + '/privkey.pem'),
       'certificate_chain': read_file(path + '/chain.pem'),
@@ -71,7 +71,7 @@ def read_file(path):
         return file.read()
 
 
-def provision_cert(isProd, domains, email):
+def provision_cert(domains, is_production, email):
     input_array = [
         'certonly',
         '-n',
@@ -84,19 +84,19 @@ def provision_cert(isProd, domains, email):
         '--logs-dir', '/tmp/logs-dir/'
     ]
 
-    if isProd:
+    if is_production:
         input_array.append('--server')
         input_array.append('https://acme-v02.api.letsencrypt.org/directory')
     else:
         input_array.append('--staging')
 
     certbot.main.main(input_array)
-    return load_cert(domains[0])
+    return load_cert(domains)
 
 
-def upload_cert_to_s3(cert, domains, bucket_name):
+def upload_cert_to_s3(cert, bucket_name):
     s3_urls = []
-    for domain in domains:
+    for domain in cert['domains']:
         domain_name = domain.replace('*.', 'asterisk.', 1)
 
         s3 = boto3.resource('s3')
@@ -161,59 +161,66 @@ def validate_bucket_name(bucket_name):
     return response
 
 
+def send_logs(text, slack=None):
+    print(text)
+    if slack is not None:
+        post_to_slack(slack, text)
+
+
 def handler(event, context):
     clear_work_dir()
+
+    slack = None
 
     try:
 
         jsonschema.validate(event, schema)
 
-        domains = event['domains']
-        bucket_name = event['bucket']
-        isProd = event['isProd']
-        slack = event['slack']
-        email = event['email']
+        domains = event.get('domains')
+        is_production = event.get('is_production')
+        bucket_name = event.get('bucket')
+        email = event.get('email')
+        slack = event.get('slack')
 
-        if isProd:
+        if is_production:
             stage = 'production'
         else:
             stage = 'staging'
 
         start_text = f'Updating {stage} certificates: {str(domains)}'
-        print(start_text)
-        post_to_slack(slack, start_text)
+        send_logs(start_text, slack)
 
         validate_bucket_name(bucket_name)
 
-        cert = provision_cert(isProd, domains, email)
+        cert = provision_cert(domains, is_production, email)
 
-        s3_urls = upload_cert_to_s3(cert, domains, bucket_name)
+        s3_urls = upload_cert_to_s3(cert, bucket_name)
 
         end_text = 'Finished uploading to S3:\n' + '\n'.join(s3_urls)
-        post_to_slack(slack, end_text)
+        send_logs(end_text, slack)
         return end_text
 
     # input
     except jsonschema.exceptions.ValidationError as e:
         error_message = '[failed] ' + str(e.message)
-        post_to_slack(slack, error_message)
-        return error_message
+        send_logs(error_message, slack)
+        raise Exception(error_message)
 
     # boto
     except ClientError as e:
         error_message = '[failed] ' + e.response['Error']['Message'] + ': ' + \
                       bucket_name
-        post_to_slack(slack, error_message)
-        return error_message
+        send_logs(error_message, slack)
+        raise Exception(error_message)
 
     # rate limit
     except messages.Error as e:
         error_message = '[failed] ' + str(e)
-        post_to_slack(slack, error_message)
-        return error_message
+        send_logs(error_message, slack)
+        raise Exception(error_message)
 
     # certbot
     except certbot.errors.Error as e:
         error_message = '[failed] ' + str(e)
-        post_to_slack(slack, error_message)
-        return error_message
+        send_logs(error_message, slack)
+        raise Exception(error_message)

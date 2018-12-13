@@ -3,11 +3,11 @@
         "*.example.com",
         "example.com"
     ],
+    "is_production": false,
     "bucket": "certs-example-bucket",
     "email": "cert@example.com",
     "slack": {
         "webhook": "https://hooks.slack.com/services/XXXXXXXXX/XXXXXXXXX/xxxxxxxxxxxxxxxxxxxxxxxx",
         "channel": "#random"
-    },
-    "isProd": false
+    }
   }
