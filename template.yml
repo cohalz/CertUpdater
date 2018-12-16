@@ -13,8 +13,6 @@ Resources:
       AutoPublishAlias: live
       Timeout: 240
       MemorySize: 128
-      Tags:
-        Service: 'system'
       Role: !GetAtt RoleForCertUpdater.Arn
 
   RoleForCertUpdater:
