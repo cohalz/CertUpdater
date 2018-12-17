@@ -13,10 +13,12 @@ STACK_NAME=$(SERVICE_NAME)-stack
 clean: ##=> Deletes current build environment and latest build
 	$(info [*] Who needs all that anyway? Destroying environment....)
 	rm -rf ./${SERVICE}/build
-	rm -rf ./${SERVICE}.zip
 	
-build:
+install:
 	$(info [+] Packaging service '$(SERVICE)' using Docker Lambda -- This may take a while...)
+	docker run -v $$PWD:/var/task -it lambci/lambda:build-python3.6 /bin/bash -c 'make _install SERVICE="${SERVICE}"'
+
+build:
 	docker run -v $$PWD:/var/task -it lambci/lambda:build-python3.6 /bin/bash -c 'make _build SERVICE="${SERVICE}"'
 
 deploy:
@@ -41,32 +43,7 @@ invoke:
 #  Helpers  #
 ############# 
 
-_build: _clone_service_to_build _install_deps
-
-_clone_service_to_build:
-ifeq ($(wildcard $(SERVICE)/build/.),)
-	$(info [+] Setting permissions for files under ${SERVICE}/)
-	find ${SERVICE}/ -type f -exec chmod go+r {} \;
-	$(info [+] Setting permissions for directories under ${SERVICE}/)
-	find ${SERVICE}/ -type d -exec chmod go+rx {} \;
-	$(info [+] Cloning ${SERVICE} directory structure to ${SERVICE}/build)
-	rsync -a -f "+ */" -f "- *" ${SERVICE}/ ${SERVICE}/build/
-	$(info [+] Cloning source files from ${SERVICE} to ${SERVICE}/build)
-	@find ${SERVICE} -type f \
-			-not -name "*.pyc" \
-			-not -name "*__pycache__" \
-			-not -name "requirements.txt" \
-			-not -name "event.json" \
-			-not -name "build" | cut -d '/' -f2- > .results.txt
-	@while read line; do \
-		ln -f ${SERVICE}/$$line ${SERVICE}/build/$$line; \
-	done < .results.txt
-	rm -f .results.txt
-else
-	$(info [-] '$(SERVICE)' already has a development build - Ignoring cloning task...)
-endif
-
-_install_deps:
+_install:
 	$(info [+] Installing '$(SERVICE)' dependencies...")
 	@pip install pipenv
 	@$(PIPENV) lock -r > requirements.txt
@@ -75,3 +52,8 @@ _install_deps:
 		--disable-pip-version-check \
 		-Ur requirements.txt -t ${SERVICE}/build/
 	@rm -f requirements.txt
+	@cp ${SERVICE}/main.py ${SERVICE}/build/
+
+_build:
+	$(info [+] Building main.py...")
+	@cp ${SERVICE}/main.py ${SERVICE}/build/

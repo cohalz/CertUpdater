@@ -14,7 +14,7 @@ schema = {
   'type': 'object',
   'required': [
     'domains',
-    'is_production'
+    'is_production',
     'bucket',
     'email',
   ],
