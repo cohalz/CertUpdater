@@ -94,28 +94,33 @@ def provision_cert(domains, is_production, email):
     return load_cert(domains)
 
 
-def upload_cert_to_s3(cert, bucket_name):
+def upload_cert_to_s3(cert, bucket_name, is_production):
     s3_urls = []
     for domain in cert['domains']:
-        domain_name = domain.replace('*.', 'asterisk.', 1)
+        normalized_domain_name = domain.replace('*.', 'asterisk.', 1)
+
+        path = normalized_domain_name
+
+        if not is_production:
+            path += '/staging'
 
         s3 = boto3.resource('s3')
         bucket = s3.Bucket(bucket_name)
 
-        bucket.put_object(Key=domain_name+'/privkey.pem',
+        bucket.put_object(Key=path+'/privkey.pem',
                           Body=cert['private_key'])
 
-        bucket.put_object(Key=domain_name+'/cert.pem',
+        bucket.put_object(Key=path+'/cert.pem',
                           Body=cert['certificate'])
 
-        bucket.put_object(Key=domain_name+'/chain.pem',
+        bucket.put_object(Key=path+'/chain.pem',
                           Body=cert['certificate_chain'])
 
-        bucket.put_object(Key=domain_name+'/fullchain.pem',
+        bucket.put_object(Key=path+'/fullchain.pem',
                           Body=cert['certificate_fullchain'])
 
         s3_urls.append('https://s3.console.aws.amazon.com/s3/buckets/' +
-                       bucket_name + '/' + domain_name + '/')
+                       bucket_name + '/' + path + '/')
     return s3_urls
 
 
@@ -194,7 +199,7 @@ def handler(event, context):
 
         cert = provision_cert(domains, is_production, email)
 
-        s3_urls = upload_cert_to_s3(cert, bucket_name)
+        s3_urls = upload_cert_to_s3(cert, bucket_name, is_production)
 
         end_text = 'Finished uploading to S3:\n' + '\n'.join(s3_urls)
         send_logs(end_text, slack)
