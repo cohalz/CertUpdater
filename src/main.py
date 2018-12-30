@@ -9,47 +9,47 @@ from acme import messages
 import jsonschema
 
 schema = {
-  'definitions': {},
-  '$schema': 'http://json-schema.org/draft-07/schema#',
-  'type': 'object',
-  'required': [
-    'domains',
-    'is_production',
-    'bucket',
-    'email',
-  ],
-  'properties': {
-    'domains': {
-      'type': 'array',
-      'items': {
-        'type': 'string'
-      }
-    },
-    'is_production': {
-      'type': 'boolean'
-    },
-    'bucket': {
-      'type': 'string'
-    },
-    'email': {
-      'type': 'string'
-    },
-    'slack': {
-      'type': 'object',
-      'required': [
-        'webhook',
-        'channel'
-      ],
-      'properties': {
-        'webhook': {
-          'type': 'string'
+    'definitions': {},
+    '$schema': 'http://json-schema.org/draft-07/schema#',
+    'type': 'object',
+    'required': [
+        'domains',
+        'is_production',
+        'bucket',
+        'email',
+    ],
+    'properties': {
+        'domains': {
+            'type': 'array',
+            'items': {
+                'type': 'string'
+            }
         },
-        'channel': {
-          'type': 'string'
+        'is_production': {
+            'type': 'boolean'
+        },
+        'bucket': {
+            'type': 'string'
+        },
+        'email': {
+            'type': 'string'
+        },
+        'slack': {
+            'type': 'object',
+            'required': [
+                'webhook',
+                'channel'
+            ],
+            'properties': {
+                'webhook': {
+                    'type': 'string'
+                },
+                'channel': {
+                    'type': 'string'
+                }
+            }
         }
-      }
     }
-  }
 }
 
 
@@ -58,11 +58,11 @@ def load_cert(domains):
 
     path = '/tmp/config-dir/live/' + first_domain_name
     return {
-      'domains': domains,
-      'certificate': read_file(path + '/cert.pem'),
-      'private_key': read_file(path + '/privkey.pem'),
-      'certificate_chain': read_file(path + '/chain.pem'),
-      'certificate_fullchain': read_file(path + '/fullchain.pem')
+        'domains': domains,
+        'certificate': read_file(path + '/cert.pem'),
+        'private_key': read_file(path + '/privkey.pem'),
+        'certificate_chain': read_file(path + '/chain.pem'),
+        'certificate_fullchain': read_file(path + '/fullchain.pem')
     }
 
 
@@ -130,16 +130,16 @@ def clear_work_dir():
 
 def post_to_slack(slack, text):
     payload = {
-                'username': 'CertUpdater',
-                'icon_emoji': ':letsencrypt:',
-                'text': text,
-                'channel': slack['channel']
+        'username': 'CertUpdater',
+        'icon_emoji': ':letsencrypt:',
+        'text': text,
+        'channel': slack['channel']
     }
 
     json_data = json.dumps(payload).encode('utf-8')
     request = urllib.request.Request(
-                slack['webhook'], data=json_data, method='POST'
-              )
+        slack['webhook'], data=json_data, method='POST'
+    )
     with urllib.request.urlopen(request) as response:
         return response.read().decode('utf-8')
 
@@ -209,7 +209,7 @@ def handler(event, context):
     # boto
     except ClientError as e:
         error_message = '[failed] ' + e.response['Error']['Message'] + ': ' + \
-                      bucket_name
+            bucket_name
         send_logs(error_message, slack)
         raise Exception(error_message)
 
