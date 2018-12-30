@@ -2,6 +2,10 @@
 
  Lambda implementation for automatically getting and uploading to S3 for Let's Encrypt certificates.
 
+## Architecture
+
+![Overview](./docs/images/overview.png "Overview of Architecture")
+
 ## To Use
 
 ### Build
