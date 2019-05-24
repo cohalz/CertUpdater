@@ -46,7 +46,13 @@ schema = {
                 },
                 'channel': {
                     'type': 'string'
-                }
+                },
+                'icon_emoji': {
+                    'type': 'string'
+                },
+                'username': {
+                    'type': 'string'
+                },
             }
         }
     }
@@ -135,8 +141,8 @@ def clear_work_dir():
 
 def post_to_slack(slack, text):
     payload = {
-        'username': 'CertUpdater',
-        'icon_emoji': ':letsencrypt:',
+        'username': slack.get('username', 'CertUpdater'),
+        'icon_emoji': slack.get('icon_emoji', ':letsencrypt:'),
         'text': text,
         'channel': slack['channel']
     }
