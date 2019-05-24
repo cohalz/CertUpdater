@@ -48,7 +48,11 @@ schema = {
                     'type': 'string'
                 }
             }
-        }
+        },
+        'log_level': {
+            "type": "string",
+            "enum": ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"],
+        },
     }
 }
 
@@ -180,6 +184,12 @@ def handler(event, context):
     try:
 
         jsonschema.validate(event, schema)
+
+        log_level = event.get('log_level')
+        if log_level:
+            level = logging.getLevelName(log_level)
+            for name in logging.Logger.manager.loggerDict.keys():
+                logging.getLogger(name).setLevel(level)
 
         domains = event.get('domains')
         is_production = event.get('is_production')
