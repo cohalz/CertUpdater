@@ -7,7 +7,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: CertUpdater
-      CodeUri: src/build
+      CodeUri: src
       Handler: main.handler
       Runtime: python3.6
       AutoPublishAlias: live
