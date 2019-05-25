@@ -1,0 +1,5 @@
+boto3
+certbot
+certbot-dns-route53
+acme
+jsonschema
