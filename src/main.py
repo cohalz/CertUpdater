@@ -52,7 +52,14 @@ schema = {
         },
         'log_level': {
             "type": "string",
-            "enum": ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"],
+            "enum": [
+                "CRITICAL",
+                "ERROR",
+                "WARNING",
+                "INFO",
+                "DEBUG",
+                "NOTSET",
+            ]
         },
     }
 }
