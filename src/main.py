@@ -1,5 +1,6 @@
 import boto3
 import certbot.main
+import logging
 import os
 import shutil
 import json
