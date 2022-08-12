@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: CertUpdater
- 
+
 Resources:
   CertUpdater:
     Type: AWS::Serverless::Function
@@ -9,7 +9,7 @@ Resources:
       FunctionName: CertUpdater
       CodeUri: src
       Handler: main.handler
-      Runtime: python3.6
+      Runtime: python3.9
       AutoPublishAlias: live
       Timeout: 240
       MemorySize: 128
